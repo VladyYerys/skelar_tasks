@@ -1,61 +1,3 @@
-# Service Operations Engineer
-![Screenshot_56](https://user-images.githubusercontent.com/106797604/227261643-6dbb8c3b-fa16-499c-a03f-60fe19d2a767.png)
-
-# Task1 Використовуючи Bash Shell напишіть скрипт, який повинен виконувати наступні дії:
- ### 1.1 витягти усіх користувачів з файлу /etc/passwd з id користувача більшим ніж 1000
-![Screenshot_61](https://user-images.githubusercontent.com/106797604/227277748-6f1e9e04-9d41-4654-a48c-d9cd8590ab7d.png)
-![Screenshot_62](https://user-images.githubusercontent.com/106797604/227277956-5f9cde52-0510-49b3-aa98-4ce05b743c76.png)
-
-### 1.2 порівнює сьогоднішню дату та дату їх останнього входу до системи
-
-
-Сценарій greps для рядка «Failed passw», щоб отримати деталі невдалої спроби входу, і розміщує ці рядки в /tmp/failed.$$.log
-Сценарій greps для рядка «Accepted password|Accepted publickey|keyboard-interactive» для отримання успішних спроб входу та розміщує ці рядки в /tmp/success.$$.log
-$$ у назві тимчасового файлу буде автоматично замінено на PID сценарію
-Наступним кроком буде виділення користувачів, які успішно ввійшли та які не ввійшли.
-Команда awk витягує п’яте поле з кінця (ім’я користувача) і передає його для сортування та uniq для створення списку користувачів.
-Далі унікальні IP-адреси витягуються за допомогою регулярного виразу та команди egrep.
-Вкладені цикли for перебирають IP-адресу та користувачів, вилучаючи рядки з кожною комбінацією IP-адреси та користувача. Якщо кількість спроб для цієї комбінації IP/користувач > 0, час першого входження витягується за допомогою grep, head і cut. Якщо кількість спроб > 1, останній час витягується за допомогою хвоста замість голови.
-Про цю спробу входу повідомляється за допомогою форматованої команди printf.
-Нарешті, тимчасовий файл видаляється.
-
-![Screenshot_63](https://user-images.githubusercontent.com/106797604/227281668-0b7d9ed3-0806-4e4e-b4e2-1018288e0e42.png)
-![Screenshot_64](https://user-images.githubusercontent.com/106797604/227281662-2c652c94-7a5f-457f-b3a3-cc29ca90d638.png)
-
-![Screenshot_65](https://user-images.githubusercontent.com/106797604/227282376-b43dc4ef-c2cc-4ea9-adff-052a273e3487.png)
-
-
-
-
- ### 1.3 якщо користувач не заходив у систему понад 30 днів, то видалити їх облікові записи
-
- 
-![Screenshot_67](https://user-images.githubusercontent.com/106797604/227290272-5dfbe971-1447-41cf-9a4a-d98329ce4b37.png)
-
-![Screenshot_68](https://user-images.githubusercontent.com/106797604/227291587-b1edf15b-f58e-4f21-813e-3d490697276b.png)
-
-
-
-
-# BUT IF YOU WANT DELETE USER EARLIER THAN 30 DAYS
-
-![Screenshot_69](https://user-images.githubusercontent.com/106797604/227303149-b13fd63e-358b-4da8-8b1b-6d94e5728fa4.png)
-![Screenshot_70](https://user-images.githubusercontent.com/106797604/227303143-3c1b58a9-5695-4cb7-8873-ee976a8ebbf6.png)
-
-![Screenshot_71](https://user-images.githubusercontent.com/106797604/227304146-d803dbca-1ceb-4d0b-ac32-ce7d01e26783.png)
-![Screenshot_72](https://user-images.githubusercontent.com/106797604/227304169-c3ddec61-bb6c-459c-80f5-06f13ccf2a45.png)
-![Screenshot_73](https://user-images.githubusercontent.com/106797604/227304203-4d94c230-c84b-4e04-b5ab-455855469c18.png)
-![Screenshot_74](https://user-images.githubusercontent.com/106797604/227304248-3cf3c5d1-484a-4a3d-a6dc-1b6812a4c0d0.png)
-![Screenshot_75](https://user-images.githubusercontent.com/106797604/227304284-109672b5-dd44-4725-87c0-43b40137c4f9.png)
-![Screenshot_76](https://user-images.githubusercontent.com/106797604/227310140-0d156e80-0db8-46d4-be12-eff7c7dde658.png)
-
-
-
-
-# 1.1
-```
-
-
 #!/bin/bash
 echo "###################################################################################################"
 echo "================================in files `hostname`_userlogins.txt================================="
@@ -87,13 +29,10 @@ done
 ) > `hostname`_userlogins.txt
 
 
-```
-
-
-# 1.2
-
-```
-AUTHLOG=/var/log/auth.log
+echo "###################################################################################################"
+echo "================================hosts files `hostname`_userhosts.txt==============================="
+echo "###################################################################################################"
+(AUTHLOG=/var/log/auth.log
 
 if [[ -n $1 ]];
 then
@@ -111,7 +50,6 @@ egrep "Accepted password|Accepted publickey|keyboard-interactive" $AUTHLOG > $SU
 
 # extract the users who failed
 failed_users=$(cat $FAILED_LOG | awk '{ print $(NF-5) }' | sort | uniq)
-
 # extract the users who successfully logged in
 success_users=$(cat $SUCCESS_LOG | awk '{ print $(NF-5) }' | sort | uniq)
 # extract the IP Addresses of successful and failed login attempts
@@ -165,17 +103,14 @@ do
       printf "%-10s|%-10s|%-10s|%-15s|%-15s|%-s\n" "Success" "$user" "$attempts" "$ip"  "$HOST" "$time";
     fi
   done
-done
+ done
 
 rm -f $FAILED_LOG
 rm -f $SUCCESS_LOG
-```
+) > `hostname`_userhosts.txt
 
 
-# 1.3
 
-
- ```
 echo "###################################################################################################"
 echo "==================Deletes Users Haven't Been Logged In  more than 30==============================="
 echo "======================in files `hostname`_delete_users.txt=========================================="
@@ -219,13 +154,7 @@ echo -e "\e[36mYou have successfully deleted all user's account which nobody log
 exit 0
 ) > `hostname`_delete_users.txt
 
- 
- ```
- 
- 
-# 1.4 BUT IF YOU WANT DELETE USER EARLIER THAN 30 DAYS 
 
-```
 echo "======================BUT IF YOU WANT DELETE USER EARLIER THAN 30 DAYS============================="
 echo "###################################################################################################"
 echo "================================Define Functions get_answer========================================"
@@ -273,7 +202,8 @@ done
 unset LINE1
 unset LINE2
 
-} 
+}
+
 
 echo "###################################################################################################"
 echo "================================Define Functions process_answer===================================="
@@ -375,7 +305,7 @@ case $? in
  # Create command to kill proccess in variable, COMMAND_3
  COMMAND_3="xargs -d \\n /usr/bin/sudo /bin/kill -9"
  # Kill processes via piping commands together
- $COMMAND_1 | gawk '{print $1}' | $COMMAND_3
+  $COMMAND_1 | gawk '{print $1}' | $COMMAND_3
  echo "Process(es) killed."
  ;;
  *) # If user answers anything but "yes", do not kill.
@@ -419,15 +349,9 @@ EXIT_LINE2="$USER_ACCOUNT at this time, exiting the script..."
 process_answer
 userdel $USER_ACCOUNT #delete user account
 echo "User account, $USER_ACCOUNT, has been removed"
-
-
 echo "###################################################################################################"
 echo "================================       FINISHED      =============================================="
 echo "###################################################################################################"
 echo "============================Name of report: $REPORT_FILE==========================================="
 
 exit
-
-
-
-```
